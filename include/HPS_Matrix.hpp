@@ -21,8 +21,6 @@ class Matrix {
 
 public:
 
-    hps::Vector<T> data_{};
-
     Matrix(std::size_t num_rows, std::size_t num_cols)
         : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols)
             {}
@@ -115,6 +113,30 @@ public:
         return {row_length, col_length, std::move(out_data)};
     }
 
+    hps::Vector<T> extractRow(std::size_t row_index) {
+        if (row_index > rows_) {
+            throw std::invalid_argument("[Matrix<T> extractRow] Row index exceeds number of rows");
+        }
+
+        hps::Vector<T> row_vector(cols_);
+        for (std::size_t j = 0; j < cols_; j++) {
+            row_vector[j] = this->at(row_index, j);
+        }
+        return row_vector;
+    }
+
+    hps::Vector<T> extractColumn(std::size_t col_index) {
+        if (col_index > cols_) {
+            throw std::invalid_argument("[Matrix<T> extractColumn] Column index exceeds number of columns");
+        }
+
+        hps::Vector<T> col_vector(rows_);
+        for (std::size_t i = 0; i < rows_; i++) {
+            col_vector[i] = this->at(i, col_index);
+        }
+        return col_vector;
+    }
+
     /**
      * Opposite of extract. Puts a matrix into `this` matrix at the specified row and column indices
      * @param row_index Row index of location to insert matrix
@@ -133,6 +155,32 @@ public:
             for (std::size_t j = col_index; j < col_index + mat.cols_; j++) {
                 at(i,j) = mat.at(i - row_index, j - col_index);
             }
+        }
+    }
+
+    void intractRow(std::size_t row_index, const hps::Vector<T>& vec) {
+        if (row_index > rows_) {
+            throw std::invalid_argument("[Matrix<T>::intractRow] Row index exceeds matrix size");
+        }
+        if (vec.size() != cols_) {
+            throw std::invalid_argument("[Matrix<T>::intractRow] Vector does not match matrix size");
+        }
+
+        for (std::size_t j = 0; j < cols_; j++) {
+            this->at(row_index, j) = vec[j];
+        }
+    }
+
+    void intractColumn(std::size_t col_index, const hps::Vector<T>& vec) {
+        if (col_index > cols_) {
+            throw std::invalid_argument("[Matrix<T>::intractColumn] Column index exceeds matrix size");
+        }
+        if (vec.size() != rows_) {
+            throw std::invalid_argument("[Matrix<T>::intractColumn] Vector does not match matrix size");
+        }
+
+        for (std::size_t i = 0; i < rows_; i++) {
+            this->at(i, col_index) = vec[i];
         }
     }
 
@@ -181,13 +229,84 @@ public:
      * @return Largest value in matrix
      */
     T max() {
-        T m = this->data_[0];
+        T to_return = this->data_[0];
         for (std::size_t i = 0; i < this->size(); i++) {
-            if (this->data_[i] > m) {
-                m = this->data_[i];
+            if (this->data_[i] > to_return) {
+                to_return = this->data_[i];
             }
         }
-        return m;
+        return to_return;
+    }
+
+    T min() {
+        T to_return = this->data_[0];
+        for (std::size_t i = 0; i < this->size(); i++) {
+            if (this->data_[i] < to_return) {
+                to_return = this->data_[i];
+            }
+        }
+        return to_return;
+    }
+
+    Matrix<T> abs() {
+        Matrix<T> to_return(*this);
+        for (std::size_t i = 0; i < to_return.size(); i++) {
+            to_return.data_[i] = fabs(this->data_[i]);
+        }
+        return to_return;
+    }
+
+    double norm(std::string norm_type) {
+        double to_return = 0;
+        if (norm_type == "frobenius" || norm_type == "euclidean") {
+            for (std::size_t i = 0; i < size(); i++) {
+                to_return += pow(fabs(data_[i]), 2);
+            }
+            to_return = sqrt(to_return);
+        }
+        else if (norm_type == "1-norm" || norm_type == "column max") {
+            hps::Vector<T> column_sums(cols_, 0);
+            for (std::size_t j = 0; j < cols_; j++) {
+                for (std::size_t i = 0; i < rows_; i++) {
+                    column_sums[j] += this->at(i,j);
+                }
+            }
+            to_return = column_sums.max();
+        }
+        else if (norm_type == "infinity" || norm_type == "row max") {
+            hps::Vector<T> row_sums(rows_, 0);
+            for (std::size_t i = 0; i < rows_; i++) {
+                for (std::size_t j = 0; j < cols_; j++) {
+                    row_sums[i] += this->at(i,j);
+                }
+            }
+            to_return = row_sums.max();
+        }
+        else {
+            throw std::invalid_argument("[Matrix<T>::norm] Invalid `norm_type`. Options are: `frobenius`, `euclidean`, `1-norm`, `column max`, `infinity`, `row max`");
+        }
+        return to_return;
+    }
+
+    double gridNorm(double delta_x, double delta_y, int order) {
+        if (order <= 0) {
+            throw std::invalid_argument("[Matrix<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `inifity`");
+        }
+
+        double to_return = 0;
+        for (std::size_t i = 0; i < size(); i++) {
+            to_return += pow(fabs(data_[i]), order);
+        }
+        to_return = pow(delta_x * delta_y * to_return, (double) 1/order);
+        return to_return;
+    }
+
+    double gridNorm(double delta_, double delta_y, std::string order) {
+        if (order != "infinity") {
+            throw std::invalid_argument("[Matrix<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `inifity`");
+        }
+
+        return this->abs().max();
     }
 
     /**
@@ -325,6 +444,7 @@ public:
 
 private:
 
+    hps::Vector<T> data_{};
     std::size_t rows_{};
     std::size_t cols_{};
 
@@ -346,7 +466,6 @@ private:
 
 };
 
-// @@TODO: Add +, -, and * operators
 /**
  * Adds two matrices.
  * \see Matrix<T>::operator+=
@@ -439,8 +558,14 @@ Matrix<T> operator*(Matrix<T>& A, Matrix<T>& B) {
     return C.transpose();
 }
 
+/**
+ * Solves a linear system Ax=b for general matrix `A` and RHS vector `b`. Wrapper for LAPACK's dgesv_.
+ * @param  A Coefficient matrix
+ * @param  b RHS vector
+ * @return   Output vector
+ */
 template<class T>
-hps::Vector<T> solve(Matrix<T>& A, hps::Vector<T>& b) {
+hps::Vector<T> solve(const Matrix<T>& A, const hps::Vector<T>& b) {
 
     // Check inputs
     if (A.rows() != A.cols()) {
@@ -471,8 +596,14 @@ hps::Vector<T> solve(Matrix<T>& A, hps::Vector<T>& b) {
     return x;
 }
 
+/**
+ * Solves multiple linear systems of the form AX=B for coefficient matrix `A` and RHS matrix `B`. Wrapper for LAPACK's dgesv_.
+ * @param  A Coefficient matrix
+ * @param  B RHS matrix (each column is a new linear system problem)
+ * @return   Matrix of solutions by column
+ */
 template<class T>
-Matrix<T> solve(Matrix<T>& A, Matrix<T>& B) {
+Matrix<T> solve(const Matrix<T>& A, const Matrix<T>& B) {
 
     // Check inputs
     if (A.rows() != A.cols()) {

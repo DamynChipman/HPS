@@ -38,7 +38,7 @@ TEST(Vector, extract) {
     hps::Vector<int> vec({0,1,2,3,4,5});
     hps::Vector<int> extracted = vec.extract(2, 2);
     hps::Vector<int> expected({2,3});
-    
+
     for (int i = 0; i < 2; i++) {
         ASSERT_EQ(extracted[i], expected[i]);
     }
@@ -49,9 +49,9 @@ TEST(Vector, intract) {
     hps::Vector<int> vec({0,1,2,3,4});
     hps::Vector<int> to_intract({10,20,30});
     hps::Vector<int> expected({0,10,20,30,4});
-    
+
     vec.intract(1, to_intract);
-    
+
     for (int i = 0; i < 5; i++) {
         ASSERT_EQ(vec[i], expected[i]);
     }
@@ -102,4 +102,27 @@ TEST(Vector, max) {
     double max_true = 42.0;
     double max_test = vec.max();
     ASSERT_EQ(max_test, max_true);
+}
+
+TEST(Vector, min) {
+    hps::Vector<double> vec({-0.1, 2.4, 0.0, -9.8, 42.0});
+    double min_true = -9.8;
+    double min_test = vec.min();
+    ASSERT_EQ(min_test, min_true);
+}
+
+TEST(Vector, abs) {
+    hps::Vector<double> vec({-0.1, 2.4, 0.0, -9.8, 42.0});
+    hps::Vector<double> abs_true({0.1, 2.4, 0.0, 9.8, 42.0});
+    hps::Vector<double> abs_test = vec.abs();
+    for (int i = 0; i < 5; i++) {
+        ASSERT_EQ(abs_test[i], abs_true[i]);
+    }
+}
+
+TEST(Vector, norm) {
+    hps::Vector<double> vec({1.0, 2.0, 3.0, 4.0});
+    double norm_test = vec.norm();
+    double norm_true = 5.477225575051661;
+    ASSERT_NEAR(norm_test, norm_true, 1e-15);
 }

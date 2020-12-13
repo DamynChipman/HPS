@@ -180,6 +180,124 @@ TEST(Matrix, intract_block) {
     ASSERT_EQ(mat_test, mat_true);
 }
 
+TEST(Matrix, extract_row) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, 12});
+
+    hps::Vector<int> row_test = mat.extractRow(1);
+    hps::Vector<int> row_true({5, 6, 7, 8});
+
+    for (int i = 0; i < 4; i++) {
+        ASSERT_EQ(row_test[i], row_true[i]);
+    }
+}
+
+TEST(Matrix, extract_column) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, 12});
+
+    hps::Vector<int> col_test = mat.extractColumn(1);
+    hps::Vector<int> col_true({2, 6, 10});
+
+    for (int i = 0; i < 3; i++) {
+        ASSERT_EQ(col_test[i], col_true[i]);
+    }
+}
+
+TEST(Matrix, intract_row) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, 12});
+
+    hps::Vector<int> row({0, 0, 0, 0});
+    mat.intractRow(2, row);
+
+    hps::Matrix<int> mat_true(r, c,
+        {1, 2, 3, 4,
+         5, 6, 7, 8,
+         0, 0, 0, 0});
+
+    ASSERT_EQ(mat, mat_true);
+}
+
+TEST(Matrix, intract_column) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, 12});
+
+    hps::Vector<int> col({0, 0, 0});
+    mat.intractColumn(2, col);
+
+    hps::Matrix<int> mat_true(r, c,
+        {1, 2, 0, 4,
+         5, 6, 0, 8,
+         9, 10, 0, 12});
+
+    ASSERT_EQ(mat, mat_true);
+}
+
+TEST(Matrix, norm_frobenius) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, 12});
+
+    double norm_test1 = mat.norm("frobenius");
+    double norm_test2 = mat.norm("euclidean");
+    double norm_true = 25.495097567963924;
+
+    ASSERT_NEAR(norm_test1, norm_true, 1e-15);
+    ASSERT_EQ(norm_test1, norm_test2);
+}
+
+TEST(Matrix, norm_column) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, 12});
+
+    double norm_test1 = mat.norm("1-norm");
+    double norm_test2 = mat.norm("column max");
+    double norm_true = 24.0;
+
+    ASSERT_NEAR(norm_test1, norm_true, 1e-15);
+    ASSERT_EQ(norm_test1, norm_test2);
+}
+
+TEST(Matrix, norm_row) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, 12});
+
+    double norm_test1 = mat.norm("infinity");
+    double norm_test2 = mat.norm("row max");
+    double norm_true = 42.0;
+
+    ASSERT_NEAR(norm_test1, norm_true, 1e-15);
+    ASSERT_EQ(norm_test1, norm_test2);
+}
+
 TEST(Matrix, add) {
     int r = 3;
     int c = 4;

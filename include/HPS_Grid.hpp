@@ -66,14 +66,16 @@ public:
     T upper_limit[D];
     hps::Vector<T> data_[D];
     T spacing[D];
-    
+
+    CellGrid() {}
+
     CellGrid(int N_points, T lower, T upper) {
         this->N_pts[0] = N_points;
         this->lower_limit[0] = lower;
         this->upper_limit[0] = upper;
         this->data_[0] = hps::Vector<T>(N_points);
         this->spacing[0] = (upper - lower) / (N_points);
-        
+
         for (int i = 0; i < N_points; i++) {
             this->data_[0][i] = (lower + this->spacing[0]/2) + i*this->spacing[0];
         }
@@ -104,4 +106,3 @@ public:
 }
 
 #endif // HPS_GRID_HPP_
-

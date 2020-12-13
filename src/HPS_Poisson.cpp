@@ -172,5 +172,47 @@ double poisson_h(double x, double y, int PROB_ID, int BC_SIDE) { // Change to re
 	}
 
 }
-    
+
+PoissonProblem::PoissonProblem(int problem_ID, double Ax, double Bx, double Ay, double By) : ID(problem_ID), Ax(Ax), Bx(Bx), Ay(Ay), By(By) {}
+
+double PoissonProblem::u(double x, double y) {
+	return 2*x*y + pow(x,2) + pow(y,2);
+}
+
+double PoissonProblem::f(double x, double y) {
+	return 4.0;
+}
+
+double PoissonProblem::gEast(double y) {
+	return pow(Ax,2) + 2*Ax*y + pow(y,2);
+}
+
+double PoissonProblem::gWest(double y) {
+	return pow(Bx,2) + 2*Bx*y + pow(y,2);
+}
+
+double PoissonProblem::gSouth(double x) {
+	return pow(Ay,2) + 2*Ay*x + pow(x,2);
+}
+
+double PoissonProblem::gNorth(double x) {
+	return pow(By,2) + 2*By*x + pow(x,2);
+}
+
+double PoissonProblem::hEast(double y) {
+	return 2*Ax + 2*y;
+}
+
+double PoissonProblem::hWest(double y) {
+	return 2*Bx + 2*y;
+}
+
+double PoissonProblem::hSouth(double x) {
+	return 2*Ay + 2*x;
+}
+
+double PoissonProblem::hNorth(double x) {
+	return 2*By + 2*x;
+}
+
 }
