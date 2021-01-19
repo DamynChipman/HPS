@@ -290,12 +290,24 @@ TEST(Matrix, norm_row) {
          5, 6,  7,  8,
          9, 10, 11, 12});
 
-    double norm_test1 = mat.norm("infinity");
-    double norm_test2 = mat.norm("row max");
+    double norm_test = mat.norm("row max");
     double norm_true = 42.0;
 
-    ASSERT_NEAR(norm_test1, norm_true, 1e-15);
-    ASSERT_EQ(norm_test1, norm_test2);
+    ASSERT_NEAR(norm_test, norm_true, 1e-15);
+}
+
+TEST(Matrix, norm_infinity) {
+    std::size_t r = 3;
+    std::size_t c = 4;
+    hps::Matrix<int> mat(r, c,
+        {1, 2,  3,  4,
+         5, 6,  7,  8,
+         9, 10, 11, -12});
+
+    double norm_test = mat.norm("infinity");
+    double norm_true = 12.0;
+
+    ASSERT_EQ(norm_test, norm_true);
 }
 
 TEST(Matrix, add) {

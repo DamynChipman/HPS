@@ -19,7 +19,7 @@ public:
     Patch();
     Patch(hps::CellGrid<double, 2> patch_grid, int ID, int level, bool is_leaf);
     std::pair<Patch, Patch> split(int first_ID, int second_ID);
-    Matrix<double> buildDirichletToNeumannMatrix();
+    Matrix<double> buildDirichletToNeumannMatrix(double lambda);
 
 };
 

@@ -7,10 +7,20 @@
 
 namespace hps {
 
-hps::Matrix<double> mergeOperationS(hps::Matrix<double> T_alpha_33, hps::Matrix<double> T_beta_33, hps::Matrix<double> T_alpha_31, hps::Matrix<double> T_beta_32);
-hps::Matrix<double> mergeOperationT(hps::Matrix<double> T_alpha_11, hps::Matrix<double> T_beta_22, hps::Matrix<double> T_alpha_13, hps::Matrix<double> T_beta_23, hps::Matrix<double> S);
-std::pair<hps::Matrix<double>, hps::Matrix<double>> mergeHorizontal(const hps::Matrix<double>& T_level, int N_levels, int level);
-std::pair<hps::Matrix<double>, hps::Matrix<double>> mergeVertical(const hps::Matrix<double>& T_level, int N_levels, int level);
+struct merge_values {
+    Matrix<double> S;
+    Matrix<double> T;
+    Vector<double> fhat;
+};
+
+Matrix<double> mergeOperationS(Matrix<double> T_alpha_33, Matrix<double> T_beta_33, Matrix<double> T_alpha_31, Matrix<double> T_beta_32);
+Matrix<double> mergeOperationT(Matrix<double> T_alpha_11, Matrix<double> T_beta_22, Matrix<double> T_alpha_13, Matrix<double> T_beta_23, Matrix<double> S);
+// std::pair<Matrix<double>, Matrix<double>> mergeHorizontal(const Matrix<double>& T_level, int N_levels, int level);
+// std::pair<Matrix<double>, Matrix<double>> mergeVertical(const Matrix<double>& T_level, int N_levels, int level);
+merge_values mergeHorizontal(const Matrix<double>& T_level, int N_levels, int level);
+merge_values mergeVertical(const Matrix<double>& T_level, int N_levels, int level);
+merge_values mergeHorizontal(const Matrix<double>& T_alpha, const Matrix<double>& T_beta, const Vector<double>& fhat_alpha, const Vector<double>& fhat_beta, int N_levels, int level);
+merge_values mergeVertical(const Matrix<double>& T_alpha, const Matrix<double>& T_beta, const Vector<double>& fhat_alpha, const Vector<double>& fhat_beta, int N_levels, int level);
 
 }
 

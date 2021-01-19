@@ -2,7 +2,7 @@
 
 namespace hps {
 
-hps::Matrix<double> mapSolution(hps::CellGrid<double, 2>& grid, hps::Vector<double>& g, hps::Matrix<double>& f) {
+hps::Matrix<double> mapSolution(hps::CellGrid<double, 2>& grid, hps::Vector<double>& g, hps::Matrix<double>& f, double lambda) {
 
     // Unpack Dirichlet data
 //     std::cout << "[mapSolution] unpacking Dirichlet data..." << std::endl;
@@ -29,37 +29,83 @@ hps::Matrix<double> mapSolution(hps::CellGrid<double, 2>& grid, hps::Vector<doub
     int NBDCND = 1;
     double* BDC = g_Ay.data();
     double* BDD = g_By.data();
-    double ELMBDA = 0.0;
+    double ELMBDA = lambda;
     double* F = f_T.data();
     int IDIMF = M;
     double PERTRB;
     int IERROR;
+    int WSIZE = 13*M + 4*N + M*((int)log2(N));
+    double* W = (double*) malloc(WSIZE*sizeof(double));
+    // std::cout << "WSIZE = " << WSIZE << std::endl;
+
+    // std::cout << "A = " << A << std::endl;
+    // std::cout << "B = " << B << std::endl;
+    // std::cout << "M = " << M << std::endl;
+    // std::cout << "C = " << C << std::endl;
+    // std::cout << "D = " << D << std::endl;
+    // std::cout << "N = " << N << std::endl;
+    // std::cout << "MBDCND = " << MBDCND << std::endl;
+    // std::cout << "NBDCND = " << NBDCND << std::endl;
+    // std::cout << "ELMBDA = " << ELMBDA << std::endl;
+    // for (int i = 0; i < N_side; i++) {
+    //     printf("BDA[%i] = %8.4e    BDB[%i] = %8.4e    BDC[%i] = %8.4e    BDD[%i] = %8.4e\n", i, BDA[i], i, BDB[i], i, BDC[i], i, BDD[i]);
+    // }
+    // for (int i = 0; i < N_side; i++) {
+    //     for (int j = 0; j < N_side; j++) {
+    //         printf("F[%i][%i] = %8.4e\n", i, j, F[i*N_side + j]);
+    //     }
+    // }
 
     // Make Fortran call to FISHPACK
-//     std::cout << "[mapSolution] beginning hstcrt_ call..." << std::endl;
+    // std::cout << "[mapSolution] beginning hstcrt_ call..." << std::endl;
     hstcrt_(&A, &B, &M, &MBDCND, BDA, BDB,
             &C, &D, &N, &NBDCND, BDC, BDD,
-            &ELMBDA, F, &IDIMF, &PERTRB, &IERROR);
-//     std::cout << "[mapSolution] end of hstcrt_ call..." << std::endl;
+            &ELMBDA, F, &IDIMF, &PERTRB, &IERROR, W);
+    // std::cout << "[mapSolution] end of hstcrt_ call..." << std::endl;
 //     std::cout << "[mapSolution] IERROR = " << IERROR << std::endl;
 
+    // std::cout << "A = " << A << std::endl;
+    // std::cout << "B = " << B << std::endl;
+    // std::cout << "M = " << M << std::endl;
+    // std::cout << "C = " << C << std::endl;
+    // std::cout << "D = " << D << std::endl;
+    // std::cout << "N = " << N << std::endl;
+    // std::cout << "MBDCND = " << MBDCND << std::endl;
+    // std::cout << "NBDCND = " << NBDCND << std::endl;
+    // std::cout << "ELMBDA = " << ELMBDA << std::endl;
+    // for (int i = 0; i < N_side; i++) {
+    //     printf("BDA[%i] = %8.4e    BDB[%i] = %8.4e    BDC[%i] = %8.4e    BDD[%i] = %8.4e\n", i, BDA[i], i, BDB[i], i, BDC[i], i, BDD[i]);
+    // }
+    // for (int i = 0; i < N_side; i++) {
+    //     for (int j = 0; j < N_side; j++) {
+    //         printf("F[%i][%i] = %8.4e\n", i, j, F[i*N_side + j]);
+    //     }
+    // }
+    // std::cout << "here 1" << std::endl;
     if (IERROR != 0) {
         std::cerr << "[PatchSolver::mapSolution] WARNING: call to hstcrt_ returned non-zero error value: IERROR = " << IERROR << std::endl;
     }
+    // std::cout << "IERROR = " << IERROR << std::endl;
+    // std::cout << "here 2" << std::endl;
+    // std::cout << "W[0] = " << W[0] << std::endl;
 
     // Move FISHPACK solution to matrix for output
-    hps::Matrix<double> u(f.rows(), f.cols());
+    // std::cout << "here 3" << std::endl;
+    hps::Matrix<double> u(grid.N_pts[hps::X], grid.N_pts[hps::Y]);
+    // std::cout << "here 4" << std::endl;
     for (int i = 0; i < grid.N_pts[hps::X]; i++) {
         for (int j = 0; j < grid.N_pts[hps::Y]; j++) {
+            // std::cout << "i = " << i << " j = " << j << std::endl;
             u.at(i,j) = F[j*grid.N_pts[hps::Y] + i];
         }
     }
+    // std::cout << "here 5" << std::endl;
 
     return u;
 }
 
 
-hps::Vector<double> mapDirichletToNeumann(hps::CellGrid<double, 2> grid, hps::Vector<double> g, hps::Matrix<double> f) {
+hps::Vector<double> mapDirichletToNeumann(hps::CellGrid<double, 2> grid, hps::Vector<double> g, hps::Matrix<double> f, double lambda) {
 
     // Unpack Grid Data
     int N_cells = grid.N_pts[hps::X];
@@ -71,7 +117,10 @@ hps::Vector<double> mapDirichletToNeumann(hps::CellGrid<double, 2> grid, hps::Ve
     hps::Vector<double> g3 = g.extract(3*N_cells, N_cells);
 
     // Compute Solution on Interior Nodes
-    hps::Matrix<double> u = mapSolution(grid, g, f);
+    // std::cout << "mapping solution..." << std::endl;
+    hps::Matrix<double> u = mapSolution(grid, g, f, lambda);
+    // std::cout << "done with mapping solution..." << std::endl;
+    // std::cout << "here now" << std::endl;
 
     // Get Interior Edge Cell Data and Compute Neumann Data
     //    Interior Cell Data
@@ -115,14 +164,14 @@ hps::Vector<double> mapDirichletToNeumann(hps::CellGrid<double, 2> grid, hps::Ve
 }
 
 
-hps::Matrix<double> buildDirichletToNeumann(hps::CellGrid<double, 2> grid) {
+hps::Matrix<double> buildDirichletToNeumann(hps::CellGrid<double, 2> grid, double lambda) {
 
     // Variables
     int N = 4*grid.N_pts[hps::X];          // Number of rows/columns in T
     hps::Matrix<double> T(N, N);           // Output DtN map matrix T
     hps::Vector<double> e_hat_j(N, 0.0);   // Unit vector
     double z = 0.0;                        // Dummy variable for zero
-    hps::Matrix<double> f_zero(N, N, z);   // Zero matrix for RHS function of PDE
+    hps::Matrix<double> f_zero(N/4, N/4, z);   // Zero matrix for RHS function of PDE
     hps::Vector<double> col_j(N);          // j-th column of T
 
     // Iterate through columns of identity matrix with e_hat_j
@@ -138,10 +187,13 @@ hps::Matrix<double> buildDirichletToNeumann(hps::CellGrid<double, 2> grid) {
         }
 
         // Perform DtN map on unit vector to get i-th column of T
-        col_j = mapDirichletToNeumann(grid, e_hat_j, f_zero);
+        // std::cout << "here 1: " << j << std::endl;
+        col_j = mapDirichletToNeumann(grid, e_hat_j, f_zero, lambda);
 
         // Intract j-th column into T
+        // std::cout << "here 2: " << j << std::endl;
         T.intractColumn(j, col_j);
+        // std::cout << "here " << j << std::endl;
     }
 
     return T;

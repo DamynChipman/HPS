@@ -273,7 +273,7 @@ public:
             }
             to_return = column_sums.max();
         }
-        else if (norm_type == "infinity" || norm_type == "row max") {
+        else if (norm_type == "row max") {
             hps::Vector<T> row_sums(rows_, 0);
             for (std::size_t i = 0; i < rows_; i++) {
                 for (std::size_t j = 0; j < cols_; j++) {
@@ -281,6 +281,9 @@ public:
                 }
             }
             to_return = row_sums.max();
+        }
+        else if (norm_type == "infinity") {
+            return this->abs().max();
         }
         else {
             throw std::invalid_argument("[Matrix<T>::norm] Invalid `norm_type`. Options are: `frobenius`, `euclidean`, `1-norm`, `column max`, `infinity`, `row max`");
@@ -297,15 +300,19 @@ public:
         for (std::size_t i = 0; i < size(); i++) {
             to_return += pow(fabs(data_[i]), order);
         }
-        to_return = pow(delta_x * delta_y * to_return, (double) 1/order);
+        to_return = pow(delta_x * delta_y * to_return, (double) 1.0/((double) order));
         return to_return;
     }
 
-    double gridNorm(double delta_, double delta_y, std::string order) {
+    double gridNorm(double delta_x, double delta_y, std::string order) {
         if (order != "infinity") {
             throw std::invalid_argument("[Matrix<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `inifity`");
         }
 
+        return this->abs().max();
+    }
+
+    double infNorm() {
         return this->abs().max();
     }
 

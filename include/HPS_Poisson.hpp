@@ -8,11 +8,11 @@ namespace hps {
 
 // ===== Enums =====
 enum PROBLEM_TYPE {
+	CONSTANT,
 	LINEAR,
 	QUAD,
 	POLY,
-	SIN,
-	MIX
+	TRIG
 };
 
 enum BOUNDARY_SIDE {
@@ -23,10 +23,10 @@ enum BOUNDARY_SIDE {
 };
 
 // ===== Function Definitions =====
-double poisson_u(double x, double y, int PROB_ID);
-double poisson_f(double x, double y, int PROB_ID);
-double poisson_g(double x, double y, int PROB_ID, int BC_SIDE);
-double poisson_h(double x, double y, int PROB_ID, int BC_SIDE);
+// double poisson_u(double x, double y, int PROB_ID);
+// double poisson_f(double x, double y, int PROB_ID);
+// double poisson_g(double x, double y, int PROB_ID, int BC_SIDE);
+// double poisson_h(double x, double y, int PROB_ID, int BC_SIDE);
 
 class PoissonProblem {
 
@@ -41,14 +41,16 @@ public:
 	PoissonProblem(int problem_ID, double Ax, double Bx, double Ay, double By);
 	double u(double x, double y);
 	double f(double x, double y);
-	double gEast(double y);
-	double gWest(double y);
-	double gSouth(double x);
-	double gNorth(double x);
-	double hEast(double y);
-	double hWest(double y);
-	double hSouth(double x);
-	double hNorth(double x);
+	double dudx(double x, double y);
+	double dudy(double x, double y);
+	// double gEast(double y);
+	// double gWest(double y);
+	// double gSouth(double x);
+	// double gNorth(double x);
+	// double hEast(double y);
+	// double hWest(double y);
+	// double hSouth(double x);
+	// double hNorth(double x);
 
 };
 

@@ -85,9 +85,13 @@ public:
         return sqrt(to_return);
     }
 
+    double infNorm() {
+        return this->abs().max();
+    }
+
     double gridNorm(double delta_x, double delta_y, int order) {
         if (order <= 0) {
-            throw std::invalid_argument("[Vector<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `inifity`");
+            throw std::invalid_argument("[Vector<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `infinity`");
         }
 
         double to_return = 0;
@@ -98,9 +102,9 @@ public:
         return to_return;
     }
 
-    double gridNorm(double delta_, double delta_y, std::string order) {
+    double gridNorm(double delta_x, double delta_y, std::string order) {
         if (order != "infinity") {
-            throw std::invalid_argument("[Vector<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `inifity`");
+            throw std::invalid_argument("[Vector<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `infinity`");
         }
 
         return this->abs().max();

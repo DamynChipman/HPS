@@ -8,14 +8,15 @@
  *
  *///////////////////////////////////////////////
 
-TEST(PatchSolver, mapSolution) {
-
+TEST(PatchSolver, 2nd_order_convergence) {
 
     // Setup vectors with iteration info
-    int N_runs = 10;
+    int N_runs = 8;
     hps::Vector<int> N_cells(N_runs);
     hps::Vector<double> u_errors(N_runs);
     hps::Vector<double> h_errors(N_runs);
+    hps::Vector<double> delta_xs(N_runs);
+    hps::Vector<double> delta_ys(N_runs);
     for (int i = 0; i < N_runs; i++) {
         N_cells[i] = pow(2, i+2);
     }
@@ -60,19 +61,19 @@ TEST(PatchSolver, mapSolution) {
         // Fill in X data
         for (int i = 0; i < N_cell; i++) {
             double x = grid.point(hps::X, i);
-            g2[i] = poisson.gSouth(x);
-            g3[i] = poisson.gNorth(x);
-            h2[i] = poisson.hSouth(x);
-            h3[i] = poisson.hNorth(x);
+            g2[i] = poisson.u(x, Ay);
+            g3[i] = poisson.u(x, By);
+            h2[i] = poisson.dudy(x, Ay);
+            h3[i] = poisson.dudy(x, By);
         }
 
         // Fill in Y data
         for (int j = 0; j < N_cell; j++) {
             double y = grid.point(hps::Y, j);
-            g0[j] = poisson.gEast(y);
-            g1[j] = poisson.gWest(y);
-            h0[j] = poisson.hEast(y);
-            h1[j] = poisson.hWest(y);
+            g0[j] = poisson.u(Ax, y);
+            g1[j] = poisson.u(Bx, y);
+            h0[j] = poisson.dudx(Ax, y);
+            h1[j] = poisson.dudx(Bx, y);
         }
 
         // Stack boundary condition data
@@ -96,15 +97,60 @@ TEST(PatchSolver, mapSolution) {
         }
 
         // Compute numerical solution to Poisson equation
-        hps::Matrix<double> u_solve = mapSolution(grid, g, f);
-        hps::Vector<double> h_solve = mapDirichletToNeumann(grid, g, f);
+        hps::Matrix<double> u_solve = mapSolution(grid, g, f, 0.0);
+        hps::Vector<double> h_solve = mapDirichletToNeumann(grid, g, f, 0.0);
 
         // Compute errors and store
-        double u_error = (u_solve - u_exact).gridNorm(grid.spacing[hps::X], grid.spacing[hps::Y], "infinity");
-        double h_error = (h_solve - h_exact).gridNorm(grid.spacing[hps::X], grid.spacing[hps::Y], "infinity");
+        double delta_x = grid.spacing[hps::X];
+        double delta_y = grid.spacing[hps::Y];
+        double u_error = (u_solve - u_exact).gridNorm(delta_x, delta_y, 2);
+        double h_error = (h_solve - h_exact).gridNorm(delta_x, delta_y, 2);
         u_errors[i] = u_error;
         h_errors[i] = h_error;
+        delta_xs[i] = delta_x;
+        delta_ys[i] = delta_y;
+    }
 
+    for (int i = 2; i < N_runs - 1; i++) {
+        double ux_order = (log(u_errors[i]/u_errors[i+1])) / (log(delta_xs[i]/delta_xs[i+1]));
+        double uy_order = (log(u_errors[i]/u_errors[i+1])) / (log(delta_ys[i]/delta_ys[i+1]));
+        double hx_order = (log(h_errors[i]/h_errors[i+1])) / (log(delta_xs[i]/delta_xs[i+1]));
+        double hy_order = (log(h_errors[i]/h_errors[i+1])) / (log(delta_ys[i]/delta_ys[i+1]));
+        ASSERT_GT(ux_order, 1.95);
+        ASSERT_GT(uy_order, 1.95);
+        ASSERT_GT(hx_order, 1.95);
+        ASSERT_GT(hy_order, 1.95);
+    }
+}
+
+TEST(PatchSolver, DtN_map_ones) {
+
+    // Setup problem inputs
+    double N_cell = 256;
+    double Ax = -2.0;
+    double Bx = 1.0;
+    double Ay = -3.0;
+    double By = 5.0;
+    int Nx = N_cell;
+    int Ny = N_cell;
+    int prob_ID = 0;
+
+    // Create finite difference grid
+    int N_pts[2] = {Nx, Ny};
+    double lower_bounds[2] = {Ax, Ay};
+    double upper_bounds[2] = {Bx, By};
+    hps::CellGrid<double, 2> grid(N_pts, lower_bounds, upper_bounds);
+
+    // Create T matrix
+    hps::Matrix<double> T = hps::buildDirichletToNeumann(grid, 0.0);
+
+    // Check DtN mapping for BC vector of ones
+    hps::Vector<double> g_ones(4*N_cell, 1.0);
+    hps::Vector<double> h_test = T * g_ones;
+    hps::Vector<double> h_true(4*N_cell, 0.0);
+
+    for (int i = 0; i < 4*N_cell; i++) {
+        ASSERT_NEAR(h_test[i], h_true[i], 1e-12);
     }
 
 

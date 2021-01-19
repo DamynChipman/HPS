@@ -51,12 +51,13 @@ std::pair<Patch, Patch> Patch::split(int first_ID, int second_ID) {
     }
 }
 
-Matrix<double> Patch::buildDirichletToNeumannMatrix() {
+Matrix<double> Patch::buildDirichletToNeumannMatrix(double lambda) {
     if (!this->is_leaf) {
         throw std::invalid_argument("[Patch::buildDirichletToNeumannMatrix] Patch to build DtN matric for is not a leaf");
     }
 
-    return buildDirichletToNeumann(this->grid);
+    // std::cout << "buildingDtN Matrix in Patch..." << std::endl;
+    return buildDirichletToNeumann(this->grid, lambda);
 }
 
 
