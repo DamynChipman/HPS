@@ -2,6 +2,7 @@
 #include "HPS_Base.hpp"
 #include "HPS_PatchSolver.hpp"
 
+#if 0
 /*///////////////////////////////////////////////
  *
  *  Unit Tests -- PatchSolver Functions
@@ -155,3 +156,4 @@ TEST(PatchSolver, DtN_map_ones) {
 
 
 }
+#endif

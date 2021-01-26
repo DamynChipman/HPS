@@ -25,7 +25,11 @@ public:
         : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols)
             {}
 
-    Matrix(std::size_t num_rows, std::size_t num_cols, T& data)
+    // Matrix(std::size_t num_rows, std::size_t num_cols, T& data)
+    //     : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols, data)
+    //         {}
+
+    Matrix(std::size_t num_rows, std::size_t num_cols, T data)
         : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols, data)
             {}
 
@@ -473,6 +477,47 @@ private:
 
 };
 
+template<class T>
+Matrix<T> eye(std::size_t N) {
+
+    T zero = 0.0;
+    hps::Matrix<T> I(N, N, zero);
+    for (std::size_t i = 0; i < N; i++) {
+        I.at(i,i) = 1;
+    }
+    return I;
+
+}
+
+template<class T>
+Matrix<T> permutation(hps::Vector<int> permutation_vector) {
+
+    std::size_t N = permutation_vector.size();
+    hps::Matrix<T> P(N, N, 0);
+    for (std::size_t i = 0; i < N; i++) {
+        P.at(i, permutation_vector[i]) = 1;
+    }
+
+    return P;
+
+}
+
+template<class T>
+Matrix<T> blockPermutation(hps::Vector<int> permutation_vector, std::size_t block_size) {
+
+    std::size_t N = permutation_vector.size();
+    hps::Matrix<T> I = hps::eye<T>(block_size);
+    hps::Matrix<T> P(N*block_size, N*block_size, 0);
+    for (std::size_t i = 0; i < N; i++) {
+        std::size_t row = i*block_size;
+        std::size_t col = permutation_vector[i]*block_size;
+        P.intract(row, col, I);
+    }
+
+    return P;
+
+}
+
 /**
  * Adds two matrices.
  * \see Matrix<T>::operator+=
@@ -641,6 +686,6 @@ Matrix<T> solve(const Matrix<T>& A, const Matrix<T>& B) {
     return X.transpose();
 }
 
-}
+} // END NAMESPACE hps
 
 #endif // HPS_MATRIX_HPP_

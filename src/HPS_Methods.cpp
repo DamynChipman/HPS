@@ -545,9 +545,12 @@ merge_values mergeVertical(
         Matrix<double> T_NS_bb_alpha = T_alpha.extract(5*N, 4*N, N, N);
         Matrix<double> T_NN_bb_alpha = T_alpha.extract(5*N, 5*N, N, N);
 
-        Vector<double> fhat_alpha_W = fhat_alpha.extract(0*N, N);
-        Vector<double> fhat_alpha_S = fhat_alpha.extract(1*N, N);
-        Vector<double> fhat_alpha_N = fhat_alpha.extract(2*N, N);
+        Vector<double> fhat_alpha_aW = fhat_alpha.extract(0*N, N);
+        Vector<double> fhat_alpha_aS = fhat_alpha.extract(1*N, N);
+        Vector<double> fhat_alpha_aN = fhat_alpha.extract(2*N, N);
+        Vector<double> fhat_alpha_bE = fhat_alpha.extract(3*N, N);
+        Vector<double> fhat_alpha_bS = fhat_alpha.extract(4*N, N);
+        Vector<double> fhat_alpha_bN = fhat_alpha.extract(5*N, N);
 
         //   Beta Patch
         Matrix<double> T_WW_aa_beta = T_beta.extract(0*N, 0*N, N, N);
@@ -592,9 +595,12 @@ merge_values mergeVertical(
         Matrix<double> T_NS_bb_beta = T_beta.extract(5*N, 4*N, N, N);
         Matrix<double> T_NN_bb_beta = T_beta.extract(5*N, 5*N, N, N);
 
-        Vector<double> fhat_beta_E = fhat_beta.extract(3*N, N);
-        Vector<double> fhat_beta_S = fhat_beta.extract(4*N, N);
-        Vector<double> fhat_beta_N = fhat_beta.extract(5*N, N);
+        Vector<double> fhat_beta_aW = fhat_beta.extract(0*N, N);
+        Vector<double> fhat_beta_aS = fhat_beta.extract(1*N, N);
+        Vector<double> fhat_beta_aN = fhat_beta.extract(2*N, N);
+        Vector<double> fhat_beta_bE = fhat_beta.extract(3*N, N);
+        Vector<double> fhat_beta_bS = fhat_beta.extract(4*N, N);
+        Vector<double> fhat_beta_bN = fhat_beta.extract(5*N, N);
 
         // Create partitioned matricies
         Matrix<double> T_alpha_11(4*N, 4*N);
@@ -686,24 +692,24 @@ merge_values mergeVertical(
         T_beta_33.intract(1*N, 1*N, T_SS_bb_beta);
 
         Vector<double> fhat_alpha_1(4*N);
-        fhat_alpha_1.intract(0*N, fhat_alpha_W);
-        fhat_alpha_1.intract(1*N, fhat_beta_E);
-        fhat_alpha_1.intract(2*N, fhat_alpha_S);
-        fhat_alpha_1.intract(3*N, fhat_beta_S);
+        fhat_alpha_1.intract(0*N, fhat_alpha_aW);
+        fhat_alpha_1.intract(1*N, fhat_alpha_bE);
+        fhat_alpha_1.intract(2*N, fhat_alpha_aS);
+        fhat_alpha_1.intract(3*N, fhat_alpha_bS);
 
         Vector<double> fhat_alpha_3(2*N);
-        fhat_alpha_3.intract(0*N, fhat_alpha_N);
-        fhat_alpha_3.intract(1*N, fhat_beta_N);
+        fhat_alpha_3.intract(0*N, fhat_alpha_aN);
+        fhat_alpha_3.intract(1*N, fhat_alpha_bN);
 
         Vector<double> fhat_beta_2(4*N);
-        fhat_beta_2.intract(0*N, fhat_alpha_W);
-        fhat_beta_2.intract(1*N, fhat_beta_E);
-        fhat_beta_2.intract(2*N, fhat_alpha_N);
-        fhat_beta_2.intract(3*N, fhat_beta_N);
+        fhat_beta_2.intract(0*N, fhat_beta_aW);
+        fhat_beta_2.intract(1*N, fhat_beta_bE);
+        fhat_beta_2.intract(2*N, fhat_beta_aN);
+        fhat_beta_2.intract(3*N, fhat_beta_bN);
 
         Vector<double> fhat_beta_3(2*N);
-        fhat_beta_3.intract(0*N, fhat_alpha_S);
-        fhat_beta_3.intract(1*N, fhat_beta_S);
+        fhat_beta_3.intract(0*N, fhat_beta_aS);
+        fhat_beta_3.intract(1*N, fhat_beta_bS);
 
         // Perform merge operation
         Matrix<double> S = mergeOperationS(T_alpha_33, T_beta_33, T_alpha_31, T_beta_32);
@@ -715,10 +721,10 @@ merge_values mergeVertical(
         double z = 0.0;
         Matrix<double> eyeN(N, N, z);
         eyeN.identify();
-        reorder_matrix.intract(0*N, 4*N, eyeN);
-        reorder_matrix.intract(1*N, 0*N, eyeN);
-        reorder_matrix.intract(2*N, 5*N, eyeN);
-        reorder_matrix.intract(3*N, 1*N, eyeN);
+        reorder_matrix.intract(0*N, 0*N, eyeN);
+        reorder_matrix.intract(1*N, 4*N, eyeN);
+        reorder_matrix.intract(2*N, 1*N, eyeN);
+        reorder_matrix.intract(3*N, 5*N, eyeN);
         reorder_matrix.intract(4*N, 2*N, eyeN);
         reorder_matrix.intract(5*N, 3*N, eyeN);
         reorder_matrix.intract(6*N, 6*N, eyeN);

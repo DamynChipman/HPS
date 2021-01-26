@@ -479,3 +479,67 @@ TEST(Matrix, matmat_solve) {
         }
     }
 }
+
+TEST(Matrix, identity) {
+    std::size_t N = 4;
+    hps::Matrix<double> I_test = hps::eye<double>(N);
+    hps::Matrix<double> I_true(N, N,
+        {
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        }
+    );
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            ASSERT_EQ(I_test.at(i,j), I_true.at(i,j));
+        }
+    }
+}
+
+TEST(Matrix, permutation) {
+    int N = 4;
+    hps::Vector<int> pi({0, 2, 3, 1});
+    hps::Matrix<double> P_test = hps::permutation<double>(pi);
+    hps::Matrix<double> P_true(N, N,
+        {
+            1, 0, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+            0, 1, 0, 0
+        }
+    );
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            ASSERT_EQ(P_test.at(i,j), P_true.at(i,j));
+        }
+    }
+}
+
+TEST(Matrix, block_permutation) {
+    int B = 2;
+    int N = 4;
+    hps::Vector<int> pi({0, 2, 3, 1});
+    hps::Matrix<double> P_test = hps::blockPermutation<double>(pi, B);
+    hps::Matrix<double> P_true(N*B, N*B,
+        {
+            1, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 1, 0, 0, 0,
+            0, 0, 0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 1, 0, 0, 0, 0, 0,
+            0, 0, 0, 1, 0, 0, 0, 0,
+        }
+    );
+
+    for (int i = 0; i < N*B; i++) {
+        for (int j = 0; j < N*B; j++) {
+            ASSERT_EQ(P_test.at(i,j), P_true.at(i,j));
+        }
+    }
+}
