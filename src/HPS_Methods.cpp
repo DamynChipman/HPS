@@ -738,5 +738,128 @@ merge_values mergeVertical(
 
 }
 
+merge_values mergeHorizontal2(
+    Matrix<double>& T_alpha,
+    Matrix<double>& T_beta,
+    Vector<double>& fhat_alpha,
+    Vector<double>& fhat_beta,
+    int N_levels,
+    int level) {
+
+        // Get N from level in tree
+        int N = (T_alpha.rows() / 4) * (N_levels - level);
+
+        // Create permutation matrix
+        //    Alpha
+        Vector<int> pi_alpha({0, 2, 3, 1});
+        Matrix<double> P_alpha = blockPermutation<double>(pi_alpha, N);
+        Matrix<double> P_alphaT = P_alpha.transpose();
+
+        //    Beta
+        Vector<int> pi_beta({1, 2, 3, 0});
+        Matrix<double> P_beta = blockPermutation<double>(pi_beta, N);
+        Matrix<double> P_betaT = P_beta.transpose();
+
+        // Permutate DtN matricies
+        Matrix<double> T_alpha_reordered = P_alpha * T_alpha;
+        T_alpha_reordered = T_alpha_reordered * P_alphaT;
+        Matrix<double> T_beta_reordered = P_beta * T_beta;
+        T_beta_reordered = T_beta_reordered * P_betaT;
+
+        // Permutate fhat vector
+        Vector<double> fhat_alpha_reordered = P_alpha * fhat_alpha;
+        Vector<double> fhat_beta_reordered = P_beta * fhat_beta;
+
+        // Extract blocks
+        Matrix<double> T_alpha_11 = T_alpha_reordered.extract(0*N, 0*N, 3*N, 3*N);
+        Matrix<double> T_alpha_13 = T_alpha_reordered.extract(0*N, 3*N, 3*N, 1*N);
+        Matrix<double> T_alpha_31 = T_alpha_reordered.extract(3*N, 0*N, 1*N, 3*N);
+        Matrix<double> T_alpha_33 = T_alpha_reordered.extract(3*N, 3*N, 1*N, 1*N);
+
+        Matrix<double> T_beta_22 = T_beta_reordered.extract(0*N, 0*N, 3*N, 3*N);
+        Matrix<double> T_beta_23 = T_beta_reordered.extract(0*N, 3*N, 3*N, 1*N);
+        Matrix<double> T_beta_32 = T_beta_reordered.extract(3*N, 0*N, 1*N, 3*N);
+        Matrix<double> T_beta_33 = T_beta_reordered.extract(3*N, 3*N, 1*N, 1*N);
+
+        Vector<double> fhat_alpha_1 = fhat_alpha_reordered.extract(0*N, 3*N);
+        Vector<double> fhat_alpha_3 = fhat_alpha_reordered.extract(3*N, 1*N);
+        Vector<double> fhat_beta_2 = fhat_beta_reordered.extract(0*N, 3*N);
+        Vector<double> fhat_beta_3 = fhat_beta_reordered.extract(3*N, 1*N);
+
+        // Perform merge operation
+        Matrix<double> S = mergeOperationS(T_alpha_33, T_beta_33, T_alpha_31, T_beta_32);
+        Matrix<double> T = mergeOperationT(T_alpha_11, T_beta_22, T_alpha_13, T_beta_23, S);
+        Vector<double> fhat = mergeOperationF(T_alpha_13, T_beta_23, T_alpha_33, T_beta_33, fhat_alpha_1, fhat_beta_2, fhat_alpha_3, fhat_beta_3);
+
+        return merge_values{S, T, fhat};
 
 }
+
+merge_values mergeVertical2(
+    Matrix<double>& T_alpha,
+    Matrix<double>& T_beta,
+    Vector<double>& fhat_alpha,
+    Vector<double>& fhat_beta,
+    int N_levels,
+    int level) {
+
+        // Get N from level in tree
+        int N = (T_alpha.rows() / 6) * (N_levels - level - 1);
+
+        // Create permutation matrix
+        //    Alpha
+        Vector<int> pi_alpha({0, 3, 1, 4, 2, 5});
+        Matrix<double> P_alpha = blockPermutation<double>(pi_alpha, N);
+        Matrix<double> P_alphaT = P_alpha.transpose();
+
+        //    Beta
+        Vector<int> pi_beta({0, 3, 2, 5, 1, 4});
+        Matrix<double> P_beta = blockPermutation<double>(pi_beta, N);
+        Matrix<double> P_betaT = P_beta.transpose();
+
+        // Permutate DtN matricies
+        Matrix<double> T_alpha_reordered = P_alpha * T_alpha;
+        T_alpha_reordered = T_alpha_reordered * P_alphaT;
+        Matrix<double> T_beta_reordered = P_beta * T_beta;
+        T_beta_reordered = T_beta_reordered * P_betaT;
+
+        // Permutate fhat vector
+        Vector<double> fhat_alpha_reordered = P_alpha * fhat_alpha;
+        Vector<double> fhat_beta_reordered = P_beta * fhat_beta;
+
+        // Extract blocks
+        Matrix<double> T_alpha_11 = T_alpha_reordered.extract(0*N, 0*N, 4*N, 4*N);
+        Matrix<double> T_alpha_13 = T_alpha_reordered.extract(0*N, 4*N, 4*N, 2*N);
+        Matrix<double> T_alpha_31 = T_alpha_reordered.extract(4*N, 0*N, 2*N, 4*N);
+        Matrix<double> T_alpha_33 = T_alpha_reordered.extract(4*N, 4*N, 2*N, 2*N);
+
+        Matrix<double> T_beta_22 = T_beta_reordered.extract(0*N, 0*N, 4*N, 4*N);
+        Matrix<double> T_beta_23 = T_beta_reordered.extract(0*N, 4*N, 4*N, 2*N);
+        Matrix<double> T_beta_32 = T_beta_reordered.extract(4*N, 0*N, 2*N, 4*N);
+        Matrix<double> T_beta_33 = T_beta_reordered.extract(4*N, 4*N, 2*N, 2*N);
+
+        Vector<double> fhat_alpha_1 = fhat_alpha_reordered.extract(0*N, 4*N);
+        Vector<double> fhat_alpha_3 = fhat_alpha_reordered.extract(4*N, 2*N);
+        Vector<double> fhat_beta_2 = fhat_beta_reordered.extract(0*N, 4*N);
+        Vector<double> fhat_beta_3 = fhat_beta_reordered.extract(4*N, 2*N);
+
+        // Perform merge operation
+        Matrix<double> S = mergeOperationS(T_alpha_33, T_beta_33, T_alpha_31, T_beta_32);
+        Matrix<double> T = mergeOperationT(T_alpha_11, T_beta_22, T_alpha_13, T_beta_23, S);
+        Vector<double> fhat = mergeOperationF(T_alpha_13, T_beta_23, T_alpha_33, T_beta_33, fhat_alpha_1, fhat_beta_2, fhat_alpha_3, fhat_beta_3);
+
+        // Reorder to return to WESN ordering
+        Vector<int> pi_tau({0, 4, 1, 5, 2, 3, 6, 7});
+        Matrix<double> P_tau = blockPermutation<double>(pi_tau, N);
+        Matrix<double> P_tauT = P_tau.transpose();
+
+        T = P_tau * T;
+        T = T * P_tauT;
+        fhat = P_tau * fhat;
+
+        return merge_values{S, T, fhat};
+
+}
+
+
+} // END NAMESPACE hps

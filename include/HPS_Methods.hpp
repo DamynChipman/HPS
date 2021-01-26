@@ -21,6 +21,8 @@ merge_values mergeHorizontal(const Matrix<double>& T_level, int N_levels, int le
 merge_values mergeVertical(const Matrix<double>& T_level, int N_levels, int level);
 merge_values mergeHorizontal(const Matrix<double>& T_alpha, const Matrix<double>& T_beta, const Vector<double>& fhat_alpha, const Vector<double>& fhat_beta, int N_levels, int level);
 merge_values mergeVertical(const Matrix<double>& T_alpha, const Matrix<double>& T_beta, const Vector<double>& fhat_alpha, const Vector<double>& fhat_beta, int N_levels, int level);
+merge_values mergeHorizontal2(Matrix<double>& T_alpha, Matrix<double>& T_beta, Vector<double>& fhat_alpha, Vector<double>& fhat_beta, int N_levels, int level);
+merge_values mergeVertical2(Matrix<double>& T_alpha, Matrix<double>& T_beta, Vector<double>& fhat_alpha, Vector<double>& fhat_beta, int N_levels, int level);
 
 }
 

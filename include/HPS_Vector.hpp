@@ -153,7 +153,7 @@ public:
             if (i != vec.size() - 1) {
                 os << ", ";
             }
-            if (i % 5 == 4) {
+            if (i % 4 == 3) {
                 os << std::endl;
             }
         }

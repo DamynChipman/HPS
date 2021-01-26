@@ -13,7 +13,7 @@ include(FindBLAS)
 include(FindLAPACK)
 
 # C++11 Standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -45,6 +45,9 @@ file(GLOB HPS_SOURCES "${PROJECT_SOURCE_DIR}/src/HPS_*.cpp")
 #    Convergence Analysis
 add_executable(convergence ${HPS_SOURCES} ${APP_DIR}/convergence.cpp)
 target_link_libraries(convergence gfortran fish90 blas lapack)
+
+add_executable(4to1_merge ${HPS_SOURCES} ${APP_DIR}/4to1_merge.cpp)
+target_link_libraries(4to1_merge gfortran fishpack blas lapack)
 
 #    Main Driver (Testing and Experimenting right now)
 add_executable(main ${HPS_SOURCES} ${APP_DIR}/main.cpp)
