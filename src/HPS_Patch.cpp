@@ -12,11 +12,11 @@ std::pair<Patch, Patch> Patch::split(int first_ID, int second_ID) {
             // Create two new grids for the new patches from the original grid
             //    Lower grid
             double lower_grid_lower_limits[2] = {this->grid.lower_limit[X], this->grid.lower_limit[Y]};
-            double lower_grid_upper_limits[2] = {this->grid.upper_limit[X], this->grid.upper_limit[Y]/2};
+            double lower_grid_upper_limits[2] = {this->grid.upper_limit[X], (this->grid.upper_limit[Y] + this->grid.lower_limit[Y])/2};
             CellGrid<double, 2> lower_grid(this->grid.N_pts, lower_grid_lower_limits, lower_grid_upper_limits);
 
             //    Upper grid
-            double upper_grid_lower_limits[2] = {this->grid.lower_limit[X], this->grid.upper_limit[Y]/2};
+            double upper_grid_lower_limits[2] = {this->grid.lower_limit[X], (this->grid.upper_limit[Y] + this->grid.lower_limit[Y])/2};
             double upper_grid_upper_limits[2] = {this->grid.upper_limit[X], this->grid.upper_limit[Y]};
             CellGrid<double, 2> upper_grid(this->grid.N_pts, upper_grid_lower_limits, upper_grid_upper_limits);
 
@@ -31,11 +31,11 @@ std::pair<Patch, Patch> Patch::split(int first_ID, int second_ID) {
             // Create two new grids for the new patches from the original grid
             //    Left grid
             double left_grid_lower_limits[2] = {this->grid.lower_limit[X], this->grid.lower_limit[Y]};
-            double left_grid_upper_limits[2] = {this->grid.upper_limit[X]/2, this->grid.upper_limit[Y]};
+            double left_grid_upper_limits[2] = {(this->grid.upper_limit[X] + this->grid.lower_limit[X])/2, this->grid.upper_limit[Y]};
             CellGrid<double, 2> left_grid(this->grid.N_pts, left_grid_lower_limits, left_grid_upper_limits);
 
             //    Right grid
-            double right_grid_lower_limits[2] = {this->grid.upper_limit[X]/2, this->grid.lower_limit[Y]};
+            double right_grid_lower_limits[2] = {(this->grid.upper_limit[X] + this->grid.lower_limit[X])/2, this->grid.lower_limit[Y]};
             double right_grid_upper_limits[2] = {this->grid.upper_limit[X], this->grid.upper_limit[Y]};
             CellGrid<double, 2> right_grid(this->grid.N_pts, right_grid_lower_limits, right_grid_upper_limits);
 

@@ -11,14 +11,28 @@ class Patch {
 
 public:
 
-    hps::CellGrid<double, 2> grid;
+    // Metadata
     int ID;
     int level;
     bool is_leaf;
 
+    // Patch domain
+    hps::CellGrid<double, 2> grid;
+    int Nx = grid.N_pts[X];
+    int Ny = grid.N_pts[Y];
+
+    // Local poisson data
+    Matrix<double> f = Matrix<double>(Nx, Ny);
+
+    // HPS data
+    Matrix<double> T = Matrix<double>(2*Nx + 2*Ny, 2*Nx + 2*Ny);
+    Matrix<double> S = Matrix<double>(1, 1);
+    Vector<double> fhat = Vector<double>(2*Nx + 2*Ny);
+
     Patch();
     Patch(hps::CellGrid<double, 2> patch_grid, int ID, int level, bool is_leaf);
     std::pair<Patch, Patch> split(int first_ID, int second_ID);
+
     Matrix<double> buildDirichletToNeumannMatrix(double lambda);
 
 };
