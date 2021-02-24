@@ -60,6 +60,14 @@ Matrix<double> Patch::buildDirichletToNeumannMatrix(double lambda) {
     return buildDirichletToNeumann(this->grid, lambda);
 }
 
+void Patch::buildT(double lambda) {
+    if (!this->is_leaf) {
+        throw std::invalid_argument("[Patch::buildDirichletToNeumannMatrix] Patch to build DtN matric for is not a leaf");
+    }
+
+    this->T = buildDirichletToNeumann(this->grid, lambda);
+}
+
 
 
 }

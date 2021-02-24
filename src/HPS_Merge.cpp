@@ -747,26 +747,38 @@ merge_values mergeHorizontal2(
     int level) {
 
         // Get N from level in tree
-        int N = (T_alpha.rows() / 4) * (N_levels - level);
+        int M = T_alpha.rows();            // # of rows or columns in T
+        int k = N_levels - level - 1;      // Reverse level ID
+        int N = M / pow(2, k / 2 + 2);     // # of cells per leaf patch per side
+        int B = N * pow(2, k / 2);         // # of rows or columns in block size
+        std::cout << "    [horizontal merge] M = " << M << std::endl;
+        std::cout << "    [horizontal merge] k = " << k << std::endl;
+        std::cout << "    [horizontal merge] N = " << N << std::endl;
+        std::cout << "    [horizontal merge] B = " << B << std::endl;
 
         // Create permutation matrix
         //    Alpha
         Vector<int> pi_alpha({0, 2, 3, 1});
-        Matrix<double> P_alpha = blockPermutation<double>(pi_alpha, N);
+        Matrix<double> P_alpha = blockPermutation<double>(pi_alpha, B);
         Matrix<double> P_alphaT = P_alpha.transpose();
 
         //    Beta
         Vector<int> pi_beta({1, 2, 3, 0});
-        Matrix<double> P_beta = blockPermutation<double>(pi_beta, N);
+        Matrix<double> P_beta = blockPermutation<double>(pi_beta, B);
         Matrix<double> P_betaT = P_beta.transpose();
 
         // Permutate DtN matricies
+        std::cout << "    [horizontal merge] permutating alpha..." << std::endl;
+        std::cout << "    [horizontal merge] P_alpha.rows() = " << P_alpha.rows() << " P_alpha.cols() = " << P_alpha.cols() << std::endl;
+        std::cout << "    [horizontal merge] T_alpha.rows() = " << T_alpha.rows() << " T_alpha.cols() = " << T_alpha.cols() << std::endl;
         Matrix<double> T_alpha_reordered = P_alpha * T_alpha;
         T_alpha_reordered = T_alpha_reordered * P_alphaT;
+        std::cout << "    [horizontal merge] permutating beta..." << std::endl;
         Matrix<double> T_beta_reordered = P_beta * T_beta;
         T_beta_reordered = T_beta_reordered * P_betaT;
 
         // Permutate fhat vector
+        std::cout << "    [horizontal merge] permutating f_hat..." << std::endl;
         Vector<double> fhat_alpha_reordered = P_alpha * fhat_alpha;
         Vector<double> fhat_beta_reordered = P_beta * fhat_beta;
 
@@ -787,6 +799,7 @@ merge_values mergeHorizontal2(
         Vector<double> fhat_beta_3 = fhat_beta_reordered.extract(3*N, 1*N);
 
         // Perform merge operation
+        std::cout << "    [horizontal merge] merging..." << std::endl;
         Matrix<double> S = mergeOperationS(T_alpha_33, T_beta_33, T_alpha_31, T_beta_32);
         Matrix<double> T = mergeOperationT(T_alpha_11, T_beta_22, T_alpha_13, T_beta_23, S);
         Vector<double> fhat = mergeOperationF(T_alpha_13, T_beta_23, T_alpha_33, T_beta_33, fhat_alpha_1, fhat_beta_2, fhat_alpha_3, fhat_beta_3);
@@ -804,17 +817,24 @@ merge_values mergeVertical2(
     int level) {
 
         // Get N from level in tree
-        int N = (T_alpha.rows() / 6) * (N_levels - level - 1);
+        int M = T_alpha.rows();
+        int k = N_levels - level - 1;
+        int N = M / (pow(2, k/2 + 2) + pow(2, k/2 + 1));
+        int B = N * pow(2, k / 2);         // # of rows or columns in block size
+        std::cout << "    [vertical merge] M = " << M << std::endl;
+        std::cout << "    [vertical merge] k = " << k << std::endl;
+        std::cout << "    [vertical merge] N = " << N << std::endl;
+        std::cout << "    [vertical merge] B = " << B << std::endl;
 
         // Create permutation matrix
         //    Alpha
         Vector<int> pi_alpha({0, 3, 1, 4, 2, 5});
-        Matrix<double> P_alpha = blockPermutation<double>(pi_alpha, N);
+        Matrix<double> P_alpha = blockPermutation<double>(pi_alpha, B);
         Matrix<double> P_alphaT = P_alpha.transpose();
 
         //    Beta
         Vector<int> pi_beta({0, 3, 2, 5, 1, 4});
-        Matrix<double> P_beta = blockPermutation<double>(pi_beta, N);
+        Matrix<double> P_beta = blockPermutation<double>(pi_beta, B);
         Matrix<double> P_betaT = P_beta.transpose();
 
         // Permutate DtN matricies
@@ -856,6 +876,12 @@ merge_values mergeVertical2(
         T = P_tau * T;
         T = T * P_tauT;
         fhat = P_tau * fhat;
+        // S = P_tau * S;
+        // std::cout << "Size of S: [" << S.rows() << ", " << S.cols() << "]\n";
+        // std::cout << "Size of P_tau: [" << P_tau.rows() << ", " << P_tau.cols() << "]\n";
+        // std::cout << "S = \n" << S << std::endl;
+        // std::cout << "P_tau = \n" << P_tau << std::endl;
+        S = S * P_tau;
 
         return merge_values{S, T, fhat};
 
