@@ -543,3 +543,39 @@ TEST(Matrix, block_permutation) {
         }
     }
 }
+
+TEST(Matrix, rectangle_multiply) {
+
+    int r1 = 2;
+    int c1 = 8;
+    int r2 = 8;
+    int c2 = 8;
+
+    hps::Matrix<double> S(r1, c1,
+        {
+            1, 2, 3, 4, 5, 6, 7, 8,
+            1, 2, 3, 4, 5, 6, 7, 8
+        }
+    );
+    hps::Matrix<double> P(r2, c2,
+        {
+            1, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 0, 0, 0, 0, 0, 0,
+            0, 0, 1, 0, 0, 0, 0, 0,
+            0, 0, 0, 1, 0, 0, 0, 0,
+            0, 0, 0, 0, 1, 0, 0, 0,
+            0, 0, 0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 0, 0, 1,
+        }
+    );
+
+    hps::Matrix<double> S_test = S * P;
+
+    for (int i = 0; i < r1; i++) {
+        for (int j = 0; j < c1; j++) {
+            ASSERT_EQ(S_test.at(i,j), S.at(i,j));
+        }
+    }
+
+}

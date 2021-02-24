@@ -12,7 +12,7 @@ set(MY_LIB_DIR "/home/dchipman1/.local/lib")
 include(FindBLAS)
 include(FindLAPACK)
 
-# C++11 Standard
+# C++17 Standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

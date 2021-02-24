@@ -21,6 +21,8 @@ class Matrix {
 
 public:
 
+    Matrix() : rows_{1}, cols_{1}, data_(1) {}
+
     Matrix(std::size_t num_rows, std::size_t num_cols)
         : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols)
             {}
@@ -588,26 +590,28 @@ Matrix<T> operator*(Matrix<T>& A, Matrix<T>& B) {
     }
 
     // Create output vector
-    Matrix<T> C(A.rows(), B.cols());
+    // Matrix<T> C(A.rows(), B.cols());
+    // Matrix<T> CT = C.transpose();
+    Matrix<T> CT(B.cols(), A.rows());
 
     // Setup call
     // void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, dobule* C, int* LDC);
     char TRANSA_ = 'C';
     char TRANSB_ = 'C';
-    int M_ = C.cols();
-    int N_ = C.cols();
-    int K_ = B.rows();
+    int M_ = A.rows();
+    int N_ = B.cols();
+    int K_ = A.cols(); // B.cols();
     double ALPHA_ = 1.0;
     double* A_ = A.data();
     int LDA_ = K_;
     double* B_ = B.data();
     int LDB_ = N_;
     double BETA_ = 0.0;
-    double* C_ = C.data();
+    double* C_ = CT.data();
     int LDC_ = M_;
     dgemm_(&TRANSA_, &TRANSB_, &M_, &N_, &K_, &ALPHA_, A_, &LDA_, B_, &LDB_, &BETA_, C_, &LDC_);
 
-    return C.transpose();
+    return CT.transpose();
 }
 
 /**
