@@ -10,6 +10,8 @@ double PoissonProblem::u(double x, double y) {
 			return 1.0;
 		case LINEAR:
 			return x + y;
+		case LAPLACE:
+			return y*sin(2*M_PI*x) + x*cos(2*M_PI*y) + 4;
 		case QUAD:
 			return x*x + y*y + 2*x*y;
 		case POLY:
@@ -26,6 +28,8 @@ double PoissonProblem::f(double x, double y) {
 		case CONSTANT:
 			return 0.0;
 		case LINEAR:
+			return 0.0;
+		case LAPLACE:
 			return 0.0;
 		case QUAD:
 			return 4.0;
