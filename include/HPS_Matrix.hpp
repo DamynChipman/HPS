@@ -4,6 +4,7 @@
 #include <cassert>
 #include <initializer_list>
 #include <iostream>
+#include <iomanip>
 #include <random>
 #include <type_traits>
 #include "HPS_Vector.hpp"
@@ -437,20 +438,29 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, const Matrix<T>& mat) {
         os << '{';
+        os << '\n';
 
         for (std::size_t i = 0; i < mat.rows_; i++){
+            os << "  { ";
             for (std::size_t j = 0; j < mat.cols_; j++){
-                os << mat.at(i, j);
+                os << std::setprecision(4) << std::setw(12) << std::scientific << mat.at(i, j);
                 os << ',';
+                if (j % 10 == 0 && j != 0) {
+                    os << '\n';
+                    os << '\t';
+                }
                 // if(j != mat.cols_ - 1){
                 //     os << ',';
                 // }
             }
+            os << " }";
             if(i != mat.rows_-1){
                 os << '\n';
             }
+
         }
 
+        os << '\n';
         os << '}';
         return os;
     }

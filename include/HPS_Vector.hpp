@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 
 namespace hps {
@@ -148,8 +149,9 @@ public:
 
     friend std::ostream& operator<<(std:: ostream& os, const Vector<T>& vec) {
         os << "{";
+        os << "\n";
         for (std::size_t i = 0; i < vec.size(); i++) {
-            os << vec[i];
+            os << std::setw(12) << std::setprecision(4) << std::scientific << vec[i];
             if (i != vec.size() - 1) {
                 os << ", ";
             }
