@@ -62,15 +62,17 @@ int main(int argc, char** argv) {
     // Create global grid
     int N_refined[2] = {2*N, 2*N};
     CellGrid<double, 2> refined_grid(N_refined, lower, upper);
+    Patch parent_patch(refined_grid);
+    parent_patch.buildT(lambda);
 
     // Create domain grid
-    int N_levels = 3;
-    int N_boundary = (N_levels-1) * N;
-    N_pts[X] = N_boundary; N_pts[Y] = N_boundary;
+    int N_levels = atoi(argv[2]);
+    int N_boundary = 2*N;
+    N_pts[X] = 2*N; N_pts[Y] = 2*N;
     CellGrid<double, 2> domain_grid(N_pts, lower, upper);
 
     // Create Poisson problem
-    int prob_ID = atoi(argv[2]);
+    int prob_ID = atoi(argv[3]);
     PoissonProblem poisson(prob_ID, xL, xU, yL, yU);
 
     //    Dirichlet boundary data
@@ -114,6 +116,22 @@ int main(int argc, char** argv) {
     int N_patches = computeNumberOfPatches(N_levels);
     Vector<Patch> patches = setupHPS(parent_grid, N_levels);
 
+    for (int tau = 0; tau < N_patches; tau++) {
+        cout << "----------------------------" << endl;
+        cout << "tau = " << tau << endl;
+        cout << "ID = " << patches[tau].ID << endl;
+        cout << "level = " << patches[tau].level << endl;
+        cout << "coords = [" << patches[tau].coords[0] << ", " << patches[tau].coords[1] << "]" << endl;
+        cout << "grid = " << endl;
+        cout << "    Nx = " << patches[tau].grid.N_pts[X] << endl;
+        cout << "    Ny = " << patches[tau].grid.N_pts[Y] << endl;
+        cout << "    xL = " << patches[tau].grid.lower_limit[X] << endl;
+        cout << "    xU = " << patches[tau].grid.upper_limit[X] << endl;
+        cout << "    yL = " << patches[tau].grid.lower_limit[Y] << endl;
+        cout << "    yU = " << patches[tau].grid.upper_limit[Y] << endl;
+        cout << endl;
+    }
+
     // for (int tau = N_patches-1; tau >= 0; tau--) {
     //     cout << tau << "    " << patches[tau].ID << "    " << patches[tau].level << "    " << patches[tau].is_leaf << endl;
     // }
@@ -136,7 +154,7 @@ int main(int argc, char** argv) {
     // }
     // cout << endl;
 
-    cout << "================================== STARTING REFINED PATCH SOLUTION STAGE ==================================" << endl;
+    // cout << "========================== STARTING REFINED PATCH SOLUTION STAGE =========================" << endl;
     Matrix<double> f_refined(2*N, 2*N);
     for (int i = 0; i < 2*N; i++) {
         for (int j = 0; j < 2*N; j++) {
@@ -149,12 +167,26 @@ int main(int argc, char** argv) {
     Matrix<double> u_patch = mapSolution(refined_grid, g_Dirichlet, f_refined, lambda);
     fishpack_time = clock() - fishpack_time;
 
-    cout << "========== TIMING RESULTS ==========" << endl;
+    cout << "==================================== TIMING RESULTS ======================================" << endl;
     printf("Build Time: %f seconds\n", ((float)build_time) / CLOCKS_PER_SEC);
     printf("Solve Time: %f seconds\n", ((float)solve_time) / CLOCKS_PER_SEC);
     printf("Patch Time: %f seconds\n", ((float)fishpack_time) / CLOCKS_PER_SEC);
 
     // Check error
+
+
+    // DtN Error
+    Matrix<double> T_merged = patches[0].T;
+    Matrix<double> T_parent = parent_patch.T;
+    Matrix<double> T_diff = T_merged - T_parent;
+    double T_error = 0;
+    for (int i = 0; i < T_merged.rows(); i++) {
+        for (int j = 0; j < T_merged.cols(); j++) {
+            T_error = max(T_error, fabs(T_diff.at(i,j)));
+        }
+    }
+    // test
+
     int N_half_boundary = N_boundary / 2;
     Matrix<double> u_aprox(N_boundary, N_boundary);
     u_aprox.intract(0*N_half_boundary, 0*N_half_boundary, patches[3].u);
@@ -162,15 +194,88 @@ int main(int argc, char** argv) {
     u_aprox.intract(1*N_half_boundary, 0*N_half_boundary, patches[4].u);
     u_aprox.intract(1*N_half_boundary, 1*N_half_boundary, patches[6].u);
 
-    Matrix<double> u_diff = u_exact - u_aprox;
-    // cout << u_diff << endl;
-    double err = 0.0;
+    Matrix<double> u_exact_diff = u_exact - u_aprox;
+    Matrix<double> u_patch_diff = u_patch - u_aprox;
+    Matrix<double> u_fp_diff = u_exact - u_patch;
+
+    double u_exact_error = 0.0;
+    double u_patch_error = 0.0;
+    double u_fp_error = 0.0;
     for (int i = 0; i < N_boundary; i++) {
         for (int j = 0; j < N_boundary; j++) {
-            err = max(err, fabs(u_aprox.at(i,j) - u_exact.at(i,j)));
+            u_exact_error = max(u_exact_error, fabs(u_aprox.at(i,j) - u_exact.at(i,j)));
+            u_patch_error = max(u_patch_error, fabs(u_aprox.at(i,j) - u_patch.at(i,j)));
+            u_fp_error = max(u_fp_error, fabs(u_exact.at(i,j) - u_patch.at(i,j)));
         }
     }
-    printf("Error = %8.4e\n", err);
+
+    cout << "===================================== ERROR RESULTS ======================================" << endl;
+    switch(prob_ID) {
+		case CONSTANT:
+			cout << "Solving uxx + uyy = 0\nu_exact = 1" << endl;
+            break;
+		case LINEAR:
+			cout << "Solving uxx + uyy = 0\nu_exact = x + y" << endl;
+            break;
+        case LAPLACE:
+            cout << "Solving uxx + uyy = 0\nu_exact = y*sin(2*M_PI*x) + x*cos(2*M_PI*y) + 4" << endl;
+            break;
+		case QUAD:
+			cout << "Solving uxx + uyy = 4\nu_exact = x^2 + y^2 + 2xy" << endl;
+            break;
+		case POLY:
+			cout << "Solving uxx + uyy = 2x^2(6y^2 + x^2)\nu_exact = y^2 x^4" << endl;
+            break;
+		case TRIG:
+			cout << "Solving uxx + uyy = -2(2 PI)^2 u\nu_exact = sin(2 PI x) sin(2 PI y)" << endl;
+            break;
+	}
+    printf("# Cells [Leaf]:          %i\n", N);
+    printf("# Degrees of Freedom:    %i\n", (int) pow(2*N, 2));
+    printf("DtN Inf-Norm Error:      %8.4e\n", T_error);
+    printf("Solution Inf-Norm Error: %8.4e\n", u_exact_error);
+    printf("Patch Inf-Norm Error:    %8.4e\n", u_patch_error);
+    printf("FISHPACK Inf-Norm Error: %8.4e\n", u_fp_error);
+    if (N < 10) {
+        cout << "u_exact = \n" << u_exact << endl;
+        cout << "u_patch = \n" << u_patch << endl;
+        cout << "u_aprox = \n" << u_aprox << endl;
+        cout << "u_exact_diff = \n" << u_exact_diff << endl;
+
+        cout << "----- Level 0 -> Level 1 -----" << endl;
+        cout << "patches[0].g = \n" << patches[0].g << endl;
+        cout << "patches[1].g = \n" << patches[1].g << endl;
+        cout << "patches[2].g = \n" << patches[2].g << endl;
+
+        Vector<double> g_interior(N_boundary);
+        for (int i = 0; i < domain_grid.N_pts[X]; i++) {
+            double x = domain_grid.point(X, i);
+            double y = 0.0;
+            g_interior[i] = poisson.u(x, y);
+        }
+        Vector<double> g_mapped = patches[0].S * g_Dirichlet;
+        cout << "g_interior = \n" << g_interior << endl;
+        cout << "g_mapped = \n" << g_mapped << endl;
+
+        cout << "----- Level 1 -> Level 2 -----" << endl;
+        cout << "patches[1].g = \n" << patches[1].g << endl;
+        cout << "patches[3].g = \n" << patches[3].g << endl;
+        cout << "patches[4].g = \n" << patches[4].g << endl;
+
+        g_interior = Vector<double>(N);
+        for (int j = 0; j < domain_grid.N_pts[Y]/2; j++) {
+            double x = 0;
+            double y = domain_grid.point(Y, j);
+            g_interior[j] = poisson.u(x, y);
+        }
+        g_mapped = patches[1].S * patches[1].g;
+        cout << "g_interior = \n" << g_interior << endl;
+        cout << "g_mapped = \n" << g_mapped << endl;
+
+    }
+
+
+    // cout << "S = \n" << patches[0].S << endl;
 
     // cout << "patches[3].u = " << endl << patches[3].u << endl;
     // cout << "patches[4].u = " << endl << patches[4].u << endl;

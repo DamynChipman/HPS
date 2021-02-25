@@ -3,6 +3,12 @@
 namespace hps {
 
 Patch::Patch() {}
+Patch::Patch(hps::CellGrid<double, 2> parent_grid) : grid(parent_grid), ID(0), level(0), is_leaf(true) {
+
+    this->coords[0] = 0; this->coords[1] = 0;
+
+}
+
 Patch::Patch(hps::CellGrid<double, 2> patch_grid, int ID, int level, bool is_leaf) : grid(patch_grid), ID(ID), level(level), is_leaf(is_leaf) {}
 
 std::pair<Patch, Patch> Patch::split(int first_ID, int second_ID) {
@@ -24,6 +30,10 @@ std::pair<Patch, Patch> Patch::split(int first_ID, int second_ID) {
             this->is_leaf = false;
             Patch lower_patch(lower_grid, first_ID, level+1, true);
             Patch upper_patch(upper_grid, second_ID, level+1, true);
+            lower_patch.coords[0] = this->coords[0];
+            lower_patch.coords[1] = this->coords[1];
+            upper_patch.coords[0] = this->coords[0];
+            upper_patch.coords[1] = this->coords[1] + 1 + this->level/2;
             return std::pair<Patch, Patch>(lower_patch, upper_patch);
         }
         else {
@@ -43,6 +53,10 @@ std::pair<Patch, Patch> Patch::split(int first_ID, int second_ID) {
             this->is_leaf = false;
             Patch left_patch(left_grid, first_ID, level+1, true);
             Patch right_patch(right_grid, second_ID, level+1, true);
+            left_patch.coords[0] = this->coords[0];
+            left_patch.coords[1] = this->coords[1];
+            right_patch.coords[0] = this->coords[0] + 1 + this->level/2;
+            right_patch.coords[1] = this->coords[1];
             return std::pair<Patch, Patch>(left_patch, right_patch);
         }
     }

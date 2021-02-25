@@ -15,11 +15,12 @@ public:
     int ID;
     int level;
     bool is_leaf;
+    int coords[2];
 
     // Patch domain
     hps::CellGrid<double, 2> grid;
-    int Nx = grid.N_pts[X];
-    int Ny = grid.N_pts[Y];
+    // int Nx = grid.N_pts[X];
+    // int Ny = grid.N_pts[Y];
 
     // Local poisson data
     Matrix<double> f{}; // = Matrix<double>(Nx, Ny);
@@ -37,6 +38,7 @@ public:
     Vector<double> fhat{}; // = Vector<double>(2*Nx + 2*Ny);
 
     Patch();
+    Patch(hps::CellGrid<double, 2> parent_grid);
     Patch(hps::CellGrid<double, 2> patch_grid, int ID, int level, bool is_leaf);
     std::pair<Patch, Patch> split(int first_ID, int second_ID);
     Matrix<double> buildDirichletToNeumannMatrix(double lambda);

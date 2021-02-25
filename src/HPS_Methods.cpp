@@ -72,7 +72,7 @@ Vector<Patch> setupHPS(CellGrid<double, 2> parent_grid, int N_levels) {
 
     int N_patches = computeNumberOfPatches(N_levels);
     Vector<Patch> patches(N_patches);
-    Patch parent_patch(parent_grid, 0, 0, true);
+    Patch parent_patch(parent_grid);
     patches[0] = parent_patch;
 
     // Patch* patch_pointer;
@@ -160,28 +160,8 @@ void buildStage(Vector<Patch>& patches, int N_levels, PoissonProblem poisson, do
                 patches[tau].S = merged.S;
                 patches[tau].fhat = merged.fhat;
             }
-
         }
-
-        // cout << "=========================================" << endl;
-        // cout << "tau           = " << tau << endl;
-        // cout << "patch ID      = " << patches[tau].ID << endl;
-        // cout << "patch level   = " << patches[tau].level << endl;
-        // cout << "patch is_leaf = " << patches[tau].is_leaf << endl;
-        // cout << "patch domain information:" << endl;
-        // cout << "    Nx = " << patches[tau].grid.N_pts[X] << "    Ny = " << patches[tau].grid.N_pts[Y] << endl;
-        // cout << "    xL = " << patches[tau].grid.lower_limit[X] << "    xU = " << patches[tau].grid.upper_limit[X] << endl;
-        // cout << "    yL = " << patches[tau].grid.lower_limit[Y] << "    yU = " << patches[tau].grid.upper_limit[Y] << endl;
-        // cout << "patch data information: " << endl;
-        // cout << "    T.rows = " << patches[tau].T.rows() << "    T.cols = " << patches[tau].T.cols() << endl;
-        // cout << "    S.rows = " << patches[tau].S.rows() << "    S.cols = " << patches[tau].S.cols() << endl;
-        // cout << "    u.rows = " << patches[tau].u.rows() << "    u.cols = " << patches[tau].u.cols() << endl;
-        // cout << "    f.rows = " << patches[tau].f.rows() << "    f.cols = " << patches[tau].f.cols() << endl;
-        // cout << "    fhat.size = " << patches[tau].fhat.size() << endl;
-        // cout << endl;
-
     }
-
 }
 
 
@@ -197,10 +177,6 @@ void solveStage(Vector<Patch>& patches, int N_levels, PoissonProblem poisson, Ve
     for (int tau = 0; tau < N_patches; tau++) {
         if (patches[tau].is_leaf) {
             cout << "applying S to leaf patch tau = " << tau << endl;
-            // cout << "applying S to leaf patch tau = " << tau << endl;
-            // cout << "N_boundary = " << N_boundary << endl;
-            // cout << "tau.S.rows() = " << patches[tau].S.rows() << "    tau.S.cols() = " << patches[tau].S.cols() << endl;
-            // cout << "tau.g.size() = " << patches[tau].g.size() << endl;
 
             // Map Dirichlet data to solution on leaf
             Matrix<double> u_homogeneous = mapSolution(patches[tau].grid, patches[tau].g, patches[tau].f, lambda);
@@ -210,14 +186,9 @@ void solveStage(Vector<Patch>& patches, int N_levels, PoissonProblem poisson, Ve
         }
         else {
             cout << "applying S to parent patch tau = " << tau << endl;
-            // cout << "applying S to parent patch tau = " << tau << endl;
-            // cout << "N_boundary = " << N_boundary << endl;
 
             // Apply solution operator to exterior Dirichlet data to get interior Dirchlet data
-            // cout << "tau.S.rows() = " << patches[tau].S.rows() << "    tau.S.cols() = " << patches[tau].S.cols() << endl;
-            // cout << "tau.g.size() = " << patches[tau].g.size() << endl;
-            Vector<double> g_interior = patches[tau].S * patches[tau].g;
-            // cout << "tau = " << tau << "    g_interior = " << endl << g_interior << endl;
+            Vector<double> g_interior = patches[tau].S * patches[tau].g; // TODO: Need to add particular solution to g_interior
 
             // Create children Dirichlet data vectors
             //    Get children IDs
