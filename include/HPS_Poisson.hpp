@@ -10,6 +10,7 @@ namespace hps {
 enum PROBLEM_TYPE {
 	CONSTANT,
 	LINEAR,
+	LAPLACE,
 	QUAD,
 	POLY,
 	TRIG
