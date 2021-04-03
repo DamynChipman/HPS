@@ -3,7 +3,7 @@
 
 #include "HPS_Vector.hpp"
 
-// @@TODO: Add documentation to all
+// @TODO: Add documentation to all
 
 namespace hps {
 

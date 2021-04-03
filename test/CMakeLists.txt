@@ -1,4 +1,5 @@
 include_directories("${PROJECT_SOURCE_DIR}/include")
+include_directories("${PROJECT_SOURCE_DIR}/external")
 
 file(GLOB HPS_SOURCES "${PROJECT_SOURCE_DIR}/src/HPS_*.cpp")
 file(GLOB TESTS "${PROJECT_SOURCE_DIR}/test/Test*.cpp")
@@ -19,7 +20,7 @@ foreach(file ${TESTS})
     ${HPS_SOURCES}
     ${file}
     "${PROJECT_SOURCE_DIR}/test/main.cpp")
-  target_link_libraries("${name}_tests" gtest_main fish90 gfortran blas lapack)
+  target_link_libraries("${name}_tests" gtest_main fish90 gfortran blas lapack lmmio)
   gtest_discover_tests("${name}_tests")
   # add_test(NAME ${name} COMMAND "${name}_tests")
 endforeach()

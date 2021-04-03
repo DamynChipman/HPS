@@ -103,7 +103,14 @@ void buildStage(Vector<Patch>& patches, int N_levels, PoissonProblem poisson, do
 
             // Build local DtN operator
             cout << "building local T for tau = " << tau << endl;
-            patches[tau].buildT(lambda);
+            // NOTE: Level optimizations are implemented!!
+            if (tau == 6) {
+                patches[tau].buildT(lambda);
+            }
+            else {
+                patches[tau].T = patches[6].T;
+            }
+            // patches[tau].buildT(lambda);
 
             // Compute local particular solution
             int N_leaf = patches[tau].grid.N_pts[X];
@@ -128,38 +135,82 @@ void buildStage(Vector<Patch>& patches, int N_levels, PoissonProblem poisson, do
             cout << "merging alpha = " << alpha << " and beta = " << beta << " to form tau = " << tau << endl;
 
             // Check if vertical or horizontal merge and perform merge
-            if ((patches[tau].level+1) % 2 == 0) {
-                // Horizontal merge
-                merge_values merged = mergeHorizontal2(
-                    patches[alpha].T,
-                    patches[beta].T,
-                    patches[alpha].fhat,
-                    patches[beta].fhat,
-                    N_levels,
-                    patches[tau].level+1
-                );
-
-                // Store data in patch
-                patches[tau].T = merged.T;
-                patches[tau].S = merged.S;
-                patches[tau].fhat = merged.fhat;
+            // NOTE: Level optimizations are implemented!!
+            if (tau == 1) {
+                patches[tau].T = patches[2].T;
+                patches[tau].S = patches[2].S;
+                patches[tau].fhat = patches[2].fhat;
+                patches[tau].w = patches[2].w;
             }
             else {
-                // Vertical merge
-                merge_values merged = mergeVertical2(
-                    patches[alpha].T,
-                    patches[beta].T,
-                    patches[alpha].fhat,
-                    patches[beta].fhat,
-                    N_levels,
-                    patches[tau].level+1
-                );
+                if ((patches[tau].level+1) % 2 == 0) {
+                    // Horizontal merge
+                    merge_values merged = mergeHorizontal(
+                        patches[alpha].T,
+                        patches[beta].T,
+                        patches[alpha].fhat,
+                        patches[beta].fhat,
+                        N_levels,
+                        patches[tau].level+1
+                    );
 
-                // Store data in patch
-                patches[tau].T = merged.T;
-                patches[tau].S = merged.S;
-                patches[tau].fhat = merged.fhat;
+                    // Store data in patch
+                    patches[tau].T = merged.T;
+                    patches[tau].S = merged.S;
+                    patches[tau].fhat = merged.fhat;
+                    patches[tau].w = merged.w;
+                }
+                else {
+                    // Vertical merge
+                    merge_values merged = mergeVertical(
+                        patches[alpha].T,
+                        patches[beta].T,
+                        patches[alpha].fhat,
+                        patches[beta].fhat,
+                        N_levels,
+                        patches[tau].level+1
+                    );
+
+                    // Store data in patch
+                    patches[tau].T = merged.T;
+                    patches[tau].S = merged.S;
+                    patches[tau].fhat = merged.fhat;
+                    patches[tau].w = merged.w;
+                }
             }
+
+            // if ((patches[tau].level+1) % 2 == 0) {
+            //     // Horizontal merge
+            //     merge_values merged = mergeHorizontal(
+            //         patches[alpha].T,
+            //         patches[beta].T,
+            //         patches[alpha].fhat,
+            //         patches[beta].fhat,
+            //         N_levels,
+            //         patches[tau].level+1
+            //     );
+            //
+            //     // Store data in patch
+            //     patches[tau].T = merged.T;
+            //     patches[tau].S = merged.S;
+            //     patches[tau].fhat = merged.fhat;
+            // }
+            // else {
+            //     // Vertical merge
+            //     merge_values merged = mergeVertical(
+            //         patches[alpha].T,
+            //         patches[beta].T,
+            //         patches[alpha].fhat,
+            //         patches[beta].fhat,
+            //         N_levels,
+            //         patches[tau].level+1
+            //     );
+            //
+            //     // Store data in patch
+            //     patches[tau].T = merged.T;
+            //     patches[tau].S = merged.S;
+            //     patches[tau].fhat = merged.fhat;
+            // }
         }
     }
 }
@@ -188,7 +239,9 @@ void solveStage(Vector<Patch>& patches, int N_levels, PoissonProblem poisson, Ve
             cout << "applying S to parent patch tau = " << tau << endl;
 
             // Apply solution operator to exterior Dirichlet data to get interior Dirchlet data
-            Vector<double> g_interior = patches[tau].S * patches[tau].g; // TODO: Need to add particular solution to g_interior
+            // std::cout << "size of w = " << patches[tau].w.size() << std::endl;
+            // Vector<double> g_interior = patches[tau].S * patches[tau].g + patches[tau].w; // TODO: Need to add particular solution to g_interior
+            Vector<double> g_interior = patches[tau].S * patches[tau].g;
 
             // Create children Dirichlet data vectors
             //    Get children IDs

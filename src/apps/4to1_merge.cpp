@@ -213,20 +213,20 @@ int main (int argc, char** argv) {
         //    Upper Horizontal Merge
         int N_levels = 3;
         int level = 2;
-        merge_values upper_h_merge = mergeHorizontal2(T_UL, T_UR, fhat_UL, fhat_UR, N_levels, level);
+        merge_values upper_h_merge = mergeHorizontal(T_UL, T_UR, fhat_UL, fhat_UR, N_levels, level);
         Matrix<double> T_upper = upper_h_merge.T;
         Matrix<double> S_upper = upper_h_merge.S;
         Vector<double> fhat_upper = upper_h_merge.fhat;
 
         //    Lower Horizontal Merge
-        merge_values lower_h_merge = mergeHorizontal2(T_LL, T_LR, fhat_LL, fhat_LR, N_levels, level);
+        merge_values lower_h_merge = mergeHorizontal(T_LL, T_LR, fhat_LL, fhat_LR, N_levels, level);
         Matrix<double> T_lower = lower_h_merge.T;
         Matrix<double> S_lower = lower_h_merge.S;
         Vector<double> fhat_lower = lower_h_merge.fhat;
 
         //    Vertical Merge
         level = 1;
-        merge_values v_merge = mergeVertical2(T_lower, T_upper, fhat_lower, fhat_upper, N_levels, level);
+        merge_values v_merge = mergeVertical(T_lower, T_upper, fhat_lower, fhat_upper, N_levels, level);
         Matrix<double> T_merged = v_merge.T;
         Matrix<double> S_merged = v_merge.S;
         Vector<double> fhat_merged = v_merge.fhat;

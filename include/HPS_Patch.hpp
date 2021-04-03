@@ -31,6 +31,9 @@ public:
     // Patch boundary data
     Vector<double> g{};
 
+    // Patch boundary particular solution
+    Vector<double> w{};
+
     // HPS data
     // Matrix<double> T = Matrix<double>(2*Nx + 2*Ny, 2*Nx + 2*Ny);
     Matrix<double> T{}; // = Matrix<double>(1, 1);

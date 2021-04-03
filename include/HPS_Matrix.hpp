@@ -28,10 +28,6 @@ public:
         : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols)
             {}
 
-    // Matrix(std::size_t num_rows, std::size_t num_cols, T& data)
-    //     : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols, data)
-    //         {}
-
     Matrix(std::size_t num_rows, std::size_t num_cols, T data)
         : rows_{num_rows}, cols_{num_cols}, data_(num_rows*num_cols, data)
             {}
@@ -120,6 +116,11 @@ public:
         return {row_length, col_length, std::move(out_data)};
     }
 
+    /**
+     * Extracts a row from the matrix.
+     * @param  row_index Index of row to extract
+     * @return           Vector of row entries
+     */
     hps::Vector<T> extractRow(std::size_t row_index) {
         if (row_index > rows_) {
             throw std::invalid_argument("[Matrix<T> extractRow] Row index exceeds number of rows");
@@ -132,6 +133,11 @@ public:
         return row_vector;
     }
 
+    /**
+     * Extracts a column from the matrix.
+     * @param  col_index Index of column to extract
+     * @return           Vector of column entries
+     */
     hps::Vector<T> extractColumn(std::size_t col_index) {
         if (col_index > cols_) {
             throw std::invalid_argument("[Matrix<T> extractColumn] Column index exceeds number of columns");
@@ -165,6 +171,11 @@ public:
         }
     }
 
+    /**
+     * Opposite of extractRow. Puts a row into matrix.
+     * @param row_index Index of row
+     * @param vec       Vector of row entries
+     */
     void intractRow(std::size_t row_index, const hps::Vector<T>& vec) {
         if (row_index > rows_) {
             throw std::invalid_argument("[Matrix<T>::intractRow] Row index exceeds matrix size");
@@ -178,6 +189,11 @@ public:
         }
     }
 
+    /**
+     * Opposite of extractColumn. Puts a column into matrix.
+     * @param col_index Index of column
+     * @param vec       Vector of column entries
+     */
     void intractColumn(std::size_t col_index, const hps::Vector<T>& vec) {
         if (col_index > cols_) {
             throw std::invalid_argument("[Matrix<T>::intractColumn] Column index exceeds matrix size");
@@ -245,6 +261,10 @@ public:
         return to_return;
     }
 
+    /**
+     * Returns the smalles value in the matrix.
+     * @return Smallest value in matrix
+     */
     T min() {
         T to_return = this->data_[0];
         for (std::size_t i = 0; i < this->size(); i++) {
@@ -255,6 +275,10 @@ public:
         return to_return;
     }
 
+    /**
+     * Creates a new matrix with all entries positive.
+     * @return New matrix of absolute value matrix
+     */
     Matrix<T> abs() {
         Matrix<T> to_return(*this);
         for (std::size_t i = 0; i < to_return.size(); i++) {
@@ -263,6 +287,17 @@ public:
         return to_return;
     }
 
+    /**
+     * Computes a matrix norm. Options are:
+     *    "frobenius"
+     *    "euclidean"
+     *    "1-norm"
+     *    "column max"
+     *    "row max"
+     *    "infinity"
+     * @param  norm_type String of norm type
+     * @return           Computed norm
+     */
     double norm(std::string norm_type) {
         double to_return = 0;
         if (norm_type == "frobenius" || norm_type == "euclidean") {
@@ -298,6 +333,13 @@ public:
         return to_return;
     }
 
+    /**
+     * Computes a grid norm of the grid matrix
+     * @param  delta_x x-spacing
+     * @param  delta_y y-spacing
+     * @param  order   Positive integer corresponding to norm order, or string specifying "infinity" for inf-norm
+     * @return         Computed grid norm
+     */
     double gridNorm(double delta_x, double delta_y, int order) {
         if (order <= 0) {
             throw std::invalid_argument("[Matrix<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `inifity`");
@@ -311,6 +353,9 @@ public:
         return to_return;
     }
 
+    /**
+     * \see gridNorm
+     */
     double gridNorm(double delta_x, double delta_y, std::string order) {
         if (order != "infinity") {
             throw std::invalid_argument("[Matrix<T>::gridNorm] Invalid grid norm `order`. Options are a positive, non-zero integer or `inifity`");
@@ -319,6 +364,10 @@ public:
         return this->abs().max();
     }
 
+    /**
+     * Computes the inifinty norm of matrix
+     * @return Inf-norm of matrix
+     */
     double infNorm() {
         return this->abs().max();
     }
@@ -489,6 +538,11 @@ private:
 
 };
 
+/**
+ * Creates an identity matrix of size `N`
+ * @param  N Size of identity matrix
+ * @return   New identity matrix
+ */
 template<class T>
 Matrix<T> eye(std::size_t N) {
 
@@ -501,6 +555,11 @@ Matrix<T> eye(std::size_t N) {
 
 }
 
+/**
+ * Creates a permutation matrix (i.e. identity matrix with rows swapped according to `permutation_vector`)
+ * @param  permutation_vector Vector of swapped indicies
+ * @return                    New permutation matrix
+ */
 template<class T>
 Matrix<T> permutation(hps::Vector<int> permutation_vector) {
 
@@ -514,6 +573,12 @@ Matrix<T> permutation(hps::Vector<int> permutation_vector) {
 
 }
 
+/**
+ * Creates a blocked version of a permutation matrix. \see permutation
+ * @param  permutation_vector Vector of swapped indicies
+ * @param  block_size         Size of each block
+ * @return                    New block permutation matrix
+ */
 template<class T>
 Matrix<T> blockPermutation(hps::Vector<int> permutation_vector, std::size_t block_size) {
 

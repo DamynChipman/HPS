@@ -11,6 +11,7 @@ set(MY_LIB_DIR "/home/dchipman1/.local/lib")
 # External Packages
 include(FindBLAS)
 include(FindLAPACK)
+add_subdirectory(external)
 
 # C++17 Standard
 set(CMAKE_CXX_STANDARD 17)
@@ -34,6 +35,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Include Directories
 include_directories("${PROJECT_SOURCE_DIR}/include")
+include_directories("${PROJECT_SOURCE_DIR}/external")
 
 # Library Directories
 link_directories(${MY_LIB_DIR})
@@ -44,11 +46,16 @@ file(GLOB HPS_SOURCES "${PROJECT_SOURCE_DIR}/src/HPS_*.cpp")
 # Create App Executables
 #    Convergence Analysis
 add_executable(convergence ${HPS_SOURCES} ${APP_DIR}/convergence.cpp)
-target_link_libraries(convergence gfortran fish90 blas lapack)
+target_link_libraries(convergence gfortran fish90 blas lapack lmmio)
 
+#    4-to-1 Merge (DtN check)
 add_executable(4to1_merge ${HPS_SOURCES} ${APP_DIR}/4to1_merge.cpp)
-target_link_libraries(4to1_merge gfortran fishpack blas lapack)
+target_link_libraries(4to1_merge gfortran fishpack blas lapack lmmio)
+
+#    HPS 4-to-1 build and solve
+add_executable(HPS ${HPS_SOURCES} ${APP_DIR}/HPS.cpp)
+target_link_libraries(HPS gfortran fishpack blas lapack lmmio)
 
 #    Main Driver (Testing and Experimenting right now)
 add_executable(main ${HPS_SOURCES} ${APP_DIR}/main.cpp)
-target_link_libraries(main gfortran fish90 blas lapack)
+target_link_libraries(main gfortran fish90 blas lapack lmmio)
